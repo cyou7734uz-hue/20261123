@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>益迪｜115年全國教育盃小幫手</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- 使用專案內的 p5.js，不依賴外部 CDN -->
+  <script src="libraries/p5.min.js"></script>
+</head>
+<body class="intro">
+  <a id="skipLink" class="skip" href="#enterChat">跳到進入聊天</a>
+
+  <main id="cover" class="cover" aria-label="歡迎畫面">
+    <picture class="cover-picture">
+      <source media="(max-width: 860px), (pointer: coarse) and (hover: none)" srcset="images/手機.jfif">
+      <img src="images/封面.jfif" alt="益迪聊天封面">
+    </picture>
+    <div id="coverWindowControls" class="window-controls cover-window-controls" hidden>
+      <button id="btnCoverMinimize" type="button" aria-label="最小化視窗">−</button>
+      <button id="btnCoverClose" type="button" aria-label="關閉桌面程式">×</button>
+    </div>
+    <div class="cover-menu-wrap">
+      <button id="coverMenuToggle" class="cover-menu-toggle" type="button" aria-expanded="false" aria-controls="coverMenu" aria-label="開啟封面選單">☰</button>
+      <nav id="coverMenu" class="cover-menu" aria-label="封面選單" hidden>
+        <a class="cover-menu-item" href="https://www.instagram.com/2026educup_in_tkuet?bqrl=bGdoNHRseXd6cG1i" target="_blank" rel="noopener noreferrer">關於我們</a>
+        <a class="cover-menu-item" href="mailto:2026educupintkuet@gmail.com">聯絡我們</a>
+        <a class="cover-menu-item" href="https://line.me/R/ti/p/@649wtfco" target="_blank" rel="noopener noreferrer">加入好友</a>
+        <button id="btnDesktopPetHelp" class="cover-menu-item" type="button">桌寵使用方法</button>
+      </nav>
+    </div>
+    <dialog id="desktopPetHelp" class="pet-help-dialog" aria-labelledby="desktopPetHelpTitle">
+      <div class="pet-help-content">
+        <h2 id="desktopPetHelpTitle">桌寵使用方法</h2>
+        <ol>
+          <li>桌寵需要使用 Electron 桌面程式，直接用瀏覽器開啟網頁無法置頂顯示。</li>
+          <li>在 Windows 電腦安裝 Node.js 22.12 以上版本，並取得完整專案資料夾。</li>
+          <li>在專案資料夾開啟終端機，第一次使用先執行 <code>npm install</code>。</li>
+          <li>安裝完成後執行 <code>npm start</code> 開啟桌面程式。</li>
+          <li>點聊天視窗右上角的 ⚙️，選擇「啟動桌寵模式」。桌寵可拖曳移動，點 💬 可返回聊天。</li>
+        </ol>
+        <p class="pet-help-note">首次安裝需要網路下載 Electron 執行檔（約 150 MB）。目前尚未提供安裝程式。</p>
+        <button id="btnCloseDesktopPetHelp" class="pet-help-close" type="button">我知道了</button>
+      </div>
+    </dialog>
+    <button id="enterChat" class="enter-chat" type="button">進入聊天</button>
+  </main>
+
+  <div id="app" class="app" aria-hidden="true">
+    <button id="btnBackCover" class="back-cover" type="button" aria-label="返回封面" title="返回封面">←</button>
+    <div id="petDragHandle" class="pet-drag-handle" aria-hidden="true" hidden></div>
+    <button id="btnPetExit" class="pet-exit" type="button" aria-label="返回聊天模式" title="返回聊天模式" hidden>💬</button>
+    <button id="btnPetClose" class="pet-close" type="button" aria-label="關閉桌面程式" title="關閉桌面程式" hidden>×</button>
+    <!-- 左：p5 畫布（益迪） -->
+    <div id="stage" class="stage"></div>
+
+    <!-- 右：聊天面板（一般 HTML，讓螢幕閱讀器與鍵盤都能使用） -->
+    <section class="chat" aria-label="與益迪對話">
+      <header class="head">
+        <span class="dot" aria-hidden="true"></span>
+        <div class="title">
+          <h1>益迪</h1>
+          <p id="status" class="status">全育盃小幫手・線上</p>
+        </div>
+        <button id="btnForm" type="button" class="icon" aria-pressed="false" aria-label="切換成貓頭鷹">🦉</button>
+        <button id="btnMenu" type="button" class="icon" aria-expanded="false" aria-controls="menu" aria-label="設定">⚙️</button>
+        <div id="desktopWindowControls" class="window-controls" hidden>
+          <button id="btnMinimize" type="button" aria-label="最小化視窗">−</button>
+          <button id="btnWindowClose" type="button" aria-label="關閉桌面程式">×</button>
+        </div>
+        <div id="menu" class="menu" hidden>
+          <button id="btnFont" type="button" aria-pressed="false">A＋ 放大字體</button>
+          <button id="btnContrast" type="button" aria-pressed="false">◐ 高對比模式</button>
+          <button id="btnTts" type="button" aria-pressed="false">🔈 語音朗讀：關</button>
+          <button id="btnMusic" type="button" aria-pressed="false">🎵 背景音樂：關</button>
+          <label class="voice-control" for="musicVolume">音樂音量 <output id="musicVolumeValue">30%</output></label>
+          <input id="musicVolume" class="voice-range" type="range" min="0" max="1" step="0.01" value="0.3">
+          <p id="musicNotice" class="keys" role="status" aria-live="polite" hidden></p>
+          <button id="btnPetMode" type="button" aria-pressed="false" disabled>🐾 桌寵模式（需桌面版）</button>
+          <p id="desktopPetNote" class="keys" hidden>桌寵模式需在桌面程式中使用。</p>
+          <label class="voice-label" for="voiceSelect">朗讀聲音</label>
+          <select id="voiceSelect" class="voice-select">
+            <option value="">載入可用語音…</option>
+          </select>
+          <label class="voice-control" for="voiceRate">語速 <output id="rateValue">1.0×</output></label>
+          <input id="voiceRate" class="voice-range" type="range" min="0.7" max="1.5" step="0.1" value="1">
+          <label class="voice-control" for="voicePitch">音高 <output id="pitchValue">1.0</output></label>
+          <input id="voicePitch" class="voice-range" type="range" min="0.5" max="2" step="0.1" value="1">
+          <p class="keys">快捷鍵：/ 輸入框　M 語音輸入　Esc 關閉選單</p>
+        </div>
+      </header>
+
+      <div id="log" class="log" role="log" aria-label="對話內容"></div>
+      <div id="quick" class="quick" role="group" aria-label="常見問題"></div>
+
+      <form id="form" class="composer" autocomplete="off">
+        <label for="input" class="sr">輸入你的問題</label>
+        <input id="input" type="text" maxlength="200" placeholder="輸入問題，按 Enter 送出">
+        <button id="btnMic" class="mic" type="button" aria-pressed="false" aria-label="語音輸入">🎤</button>
+        <button id="btnSend" class="send" type="submit" aria-label="送出">➤</button>
+      </form>
+    </section>
+  </div>
+
+  <audio id="backgroundMusic" src="music.mp3" loop preload="none"></audio>
+  <script src="sketch.js"></script>
+</body>
+</html>
