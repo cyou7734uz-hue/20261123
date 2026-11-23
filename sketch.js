@@ -42,6 +42,7 @@ function updateFormButton() {
   const button = document.getElementById('btnForm');
   if (!button) return;
   const owl = currentOwlForm();
+  document.body.classList.toggle('owl-form', owl);
   button.textContent = owl ? '🧍' : '🦉';
   button.setAttribute('aria-label', owl ? '切換成人形' : '切換成貓頭鷹');
   button.setAttribute('aria-pressed', String(owl));
